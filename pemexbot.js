@@ -1,15 +1,9 @@
 const Discord = require("discord.js")
-const ytdl = require('ytdl-core');
 const client = new Discord.Client()
 
-const botToken = "NjUyNDg3ODYxOTM2OTc5OTY5.XepKtw.xP3A9Fs8dOW6bg5YlvQIwakJTvY"
+const botToken = "NjUyNDg3ODYxOTM2OTc5OTY5.Xepq1w.ETc6e6DwqWGTglrpBFKppUU6vJY"
 const generalChannelID = "652487611494957079"
 const pemexPic = new Discord.Attachment("https://lastfm.freetls.fastly.net/i/u/ar0/793a89505685565e9fea2c404523163c.jpg")
-const serverQueue = queue.get(message.guild.id)
-
-const queue = new Map()
-
-
 
 client.on("ready", () => {
     console.log("Connected as " + client.user.tag)
@@ -33,7 +27,8 @@ client.on("message", (recievedMessage) => {
     {
         return
     }
-    //botprefix
+    
+    // recievedMessage.channel.send("Message recieved, " + recievedMessage.author.toString() + ": " + recievedMessage.content)
     if(recievedMessage.content.startsWith("!")) {
         processCommand(recievedMessage)
     }
@@ -52,18 +47,6 @@ function processCommand(recievedMessage) {
     else if(primaryCommand == "multiply")
     {
         multiplyCommand(arguments, recievedMessage)
-    }
-    else if(primaryCommand == "play")
-    {
-        playMusicCommand(arguments,recievedMessage)
-    }
-    else if(primaryCommand == "skip")
-    {
-        skipMusicCommand(arguments, recievedMessage)
-    }
-    else if(primaryCommand == "stop")
-    {
-        stopMusicCommand(arguments, recievedMessage)
     }
     else{
         recievedMessage.channel.send("Unknown command. Try `!help` or `!multiply`")
@@ -92,19 +75,5 @@ function helpCommand(arguments, recievedMessage){
         recievedMessage.channel.send("It looks like you need help with " + arguments)
     }
 }
-
-function playMusicCommand(arguments, recievedMessage) {
-    execute(recievedMessage, serverQueue)
-    return
-}
-function skipMusicCommand(arguments, recievedMessage) {
-    skip(recievedMessage, serverQueue)
-    return
-}
-function stopMusicCommand(arguments, recievedMessage) {
-    stop(recievedMessage, serverQueue)
-    return
-}
-
 
 client.login(botToken)
