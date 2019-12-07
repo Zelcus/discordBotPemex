@@ -5,6 +5,13 @@ const {
     channel_id
 } = require('./config.json');
 const ytdl = require('ytdl-core');
+const ytsr = require('ytsr');
+const fs = require('fs')
+const {
+    query,
+    items
+} = require('./searchResult.json');
+
 
 const client = new Discord.Client();
 
@@ -41,18 +48,17 @@ client.on('message', async message => {
         execute(message, serverQueue);
         console.log(serverQueue)
         return;
-    } 
+    }
     else if (message.content.startsWith(`${prefix}skip`)) {
         skip(message, serverQueue);
         return;
-    } 
+    }
     else if (message.content.startsWith(`${prefix}stop`)) {
         stop(message, serverQueue);
         return;
-    } 
-    else if (message.content.startsWith(`${prefix}delete`))
-    {
-        deleteSong(message,serverQueue);
+    }
+    else if (message.content.startsWith(`${prefix}delete`)) {
+        deleteSong(message, serverQueue);
         return;
     }
     else {
@@ -69,13 +75,32 @@ async function execute(message, serverQueue) {
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
         return message.channel.send('I need the permissions to join and speak in your voice channel!');
     }
-
-    const songInfo = await ytdl.getInfo(args[1]);
+    ytsr.getFilters(args[1], function (err, filters) {
+        if (err) throw err;
+        filter = filters.get('Type').find(o => o.name === 'Video');
+        ytsr.getFilters(filter.ref, function (err, filters) {
+            if (err) throw err;
+            filter = filters.get('Duration').find(o => o.name.startsWith('Short'));
+            var options = {
+                limit: 1,
+                nextpageRef: filter.ref,
+            }
+            ytsr(null, options, function (err, searchResults) {
+                if (err) throw err;
+                var jsonData = JSON.stringify(searchResults);
+                fs.writeFile("searchResult.json", jsonData, function(err){
+                    if(err){
+                        console.log(err)
+                    }
+                })
+            });
+        });      
+    });
+    const songInfo = await ytdl.getInfo(items[0].link);
     const song = {
         title: songInfo.title,
         url: songInfo.video_url,
     };
-
     if (!serverQueue) {
         const queueContruct = {
             textChannel: message.channel,
@@ -101,7 +126,6 @@ async function execute(message, serverQueue) {
         }
     } else {
         serverQueue.songs.push(song);
-        console.log(serverQueue.songs);
         return message.channel.send(`${song.title} has been added to the queue!`);
     }
 
@@ -117,21 +141,19 @@ function stop(message, serverQueue) {
     if (!message.member.voiceChannel) return message.channel.send('You have to be in a voice channel to stop the music!');
     serverQueue.connection.dispatcher.end();
 }
-function deleteSong(message, serverQueue)
-{
+function deleteSong(message, serverQueue) {
     queue.delete(guild.id);
     return message.channel.send("You deleted " + `${song.title}` + "from the playlist")
 }
 
 function play(guild, song) {
     const serverQueue = queue.get(guild.id);
-
     if (!song) {
         serverQueue.voiceChannel.leave();
 
         return;
     }
-
+    
     const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
         .on('end', () => {
             console.log('Music ended!');
