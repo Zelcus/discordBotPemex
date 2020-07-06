@@ -10,7 +10,7 @@ const fs = require('fs')
 const {
     query,
     items
-} = require('./searchResult.json');
+} = require('./pemexSearcher.json');
 
 
 const client = new Discord.Client();
@@ -88,7 +88,7 @@ async function execute(message, serverQueue) {
             ytsr(null, options, function (err, searchResults) {
                 if (err) throw err;
                 var jsonData = JSON.stringify(searchResults);
-                fs.writeFile("searchResult.json", jsonData, function(err){
+                fs.writeFile("pemexSearcher.json", jsonData, function(err){
                     if(err){
                         console.log(err)
                     }
