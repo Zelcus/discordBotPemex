@@ -25,32 +25,36 @@ client.once("disconnect", () => {
 });
 
 client.on("message", async (message) => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) {
-    return;
-  }
-
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+  const args = message.content.slice(prefix.length).split(/ +/);
   const serverQueue = queue.get(message.guild.id);
+  const command = args.shift().toLowerCase();
 
-  if (message.content.startsWith(`${prefix}play`)) {
-    execute(message, serverQueue);
+  if (command === "play") {
+    play(message, serverQueue);
     return;
-  } else if (message.content.startsWith(`${prefix}skip`)) {
+  } else if (command === "skip") {
     skip(message, serverQueue);
     return;
-  } else if (message.content.startsWith(`${prefix}stop`)) {
+  } else if (command === "stop") {
     stop(message, serverQueue);
     return;
-  } else if (message.content.startsWith(`${prefix}delete`)) {
+  } else if (command === "delete") {
     deleteSong(message, serverQueue);
     return;
+  } else if (command === "args-info") {
+    if (!args.length) {
+      return message.channel.send(
+        `You didn't provide any arguments, ${message.author}!`
+      );
+    }
   } else {
     message.channel.send("You need to enter a valid command homie!");
   }
 });
 
-async function execute(message, serverQueue) {
-  const args = message.content.split(" ");
+async function play(message, serverQueue) {
+  let args = message.content.split(" ");
 
   const voiceChannel = message.member.voiceChannel;
   if (!voiceChannel)
