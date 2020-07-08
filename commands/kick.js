@@ -1,7 +1,7 @@
 module.exports = {
-	name: "ping",
-	description: "Ping!",
-	cooldown: 5,
+	name: "Kick",
+	description: "Kick a user from the server.",
+	guildOnly: true,
 	execute(message, args) {
 		message.channel.send("Pong.");
 	},
